@@ -76,18 +76,16 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
         await createCategory(values);
       }
       onSuccess?.();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error & { code?: string; details?: string; hint?: string; error_description?: string; status?: string };
       console.error('Full error details:', error);
-      
       // Log all possible error properties for debugging
       console.error('Error code:', error.code);
       console.error('Error message:', error.message);
       console.error('Error details:', error.details);
       console.error('Error hint:', error.hint);
-      
       const errorMessage = error.message || error.error_description || error.details || '';
       const errorCode = error.code || error.status || '';
-      
       // Handle authentication issues
       if (errorCode === 'AUTH_USER_NOT_FOUND' || errorMessage.includes('foreign key constraint')) {
         form.setError('root', {
@@ -95,7 +93,6 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
         });
         return;
       }
-      
       // Handle unique constraint violation (409 conflict)
       const isUniqueViolation = 
         errorCode === '23505' || 
@@ -105,7 +102,6 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
         errorMessage.toLowerCase().includes('conflict') ||
         errorMessage.includes('already exists') ||
         (error.details && error.details.toLowerCase().includes('unique'));
-      
       if (isUniqueViolation) {
         form.setError('name', {
           message: 'A category with this name already exists. Please choose a different name.',

@@ -57,13 +57,12 @@ export const useExpenses = () => {
 
     if (error) {
       // Handle foreign key constraint violations specifically
-      if (error.code === '23503' || error.message?.includes('foreign key constraint')) {
-        const enhancedError = new Error('User authentication issue. Please sign out and sign in again to refresh your session.');
-        (enhancedError as any).code = 'AUTH_USER_NOT_FOUND';
-        (enhancedError as any).originalError = error;
+      if ((error as { code?: string; message?: string }).code === '23503' || (error as { message?: string }).message?.includes('foreign key constraint')) {
+        const enhancedError = new Error('User authentication issue. Please sign out and sign in again to refresh your session.') as Error & { code?: string; originalError?: unknown };
+        enhancedError.code = 'AUTH_USER_NOT_FOUND';
+        enhancedError.originalError = error;
         throw enhancedError;
       }
-      
       throw error;
     }
     return data;
@@ -82,14 +81,13 @@ export const useExpenses = () => {
 
     if (error) {
       // Handle foreign key constraint violations specifically
-      if (error.code === '23503' || error.message?.includes('foreign key constraint')) {
-        const enhancedError = new Error('User authentication issue. Please sign out and sign in again to refresh your session.');
-        (enhancedError as any).code = 'AUTH_USER_NOT_FOUND';
-        (enhancedError as any).originalError = error;
-        throw enhancedError;
-      }
-      
-      throw error;
+    if ((error as { code?: string; message?: string }).code === '23503' || (error as { message?: string }).message?.includes('foreign key constraint')) {
+      const enhancedError = new Error('User authentication issue. Please sign out and sign in again to refresh your session.') as Error & { code?: string; originalError?: unknown };
+      enhancedError.code = 'AUTH_USER_NOT_FOUND';
+      enhancedError.originalError = error;
+      throw enhancedError;
+    }
+    throw error;
     }
     return data;
   };
